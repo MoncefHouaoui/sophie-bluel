@@ -24,12 +24,12 @@ renderGallery();
 * - On crée figure > img + figcaption pour chaque projet
 * - On ajoute tout dans .gallery
 */
-function renderGallery() {
+function renderGallery(list = works) {
 const gallery = document.querySelector(".gallery");
 console.log("gallery =", gallery);
 if (!gallery) return;
 gallery.innerHTML = "";
-works.forEach((work) => {
+list.forEach((work) => {
 const figure = document.createElement("figure");
 const img = document.createElement("img");
 img.src = work.imageUrl;
