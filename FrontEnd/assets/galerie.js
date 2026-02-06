@@ -1,4 +1,5 @@
 console.log("✅ script.js est bien chargé");
+
 // 1) Adresse de base de l’API (ton back-end)
 const API_BASE = "http://localhost:5678/api";
 // 2) Variable qui stocke les projets récupérés
@@ -10,13 +11,42 @@ let works = [];
 * - Stockage dans works
 * - Affichage avec renderGallery()
 */
+
+function setupEditMode() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  // 1) login -> logout
+  const loginLink = document.querySelector('nav a[href="login.html"]');
+  if (loginLink) {
+    loginLink.textContent = "logout";
+    loginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    });
+  }
+
+  // 2) Cacher les filtres en mode édition (souvent demandé)
+  const filters = document.querySelector(".filters");
+  if (filters) filters.style.display = "none";
+
+  // 3) Afficher un bandeau si tu l’as dans le HTML
+  const editBanner = document.querySelector(".edit-banner");
+  if (editBanner) editBanner.style.display = "flex";
+
+  // 4) Afficher le bouton modifier si tu l’as dans le HTML
+  const editBtn = document.querySelector(".edit-btn");
+  if (editBtn) editBtn.style.display = "inline-flex";
+} 
+
 async function fetchWorks() {
-const response = await fetch(`${API_BASE}/works`);
-if (!response.ok) {
-throw new Error("Impossible de récupérer les projets (works).");
-}
-works = await response.json();
-renderGallery();
+    const response = await fetch(`${API_BASE}/works`);
+    if (!response.ok) {
+        throw new Error("Impossible de récupérer les projets (works).");
+    }
+    works = await response.json();
+    renderGallery(works);
 }
 /**
 * 4) Afficher les projets dans la page
@@ -24,14 +54,14 @@ renderGallery();
 * - On crée figure > img + figcaption pour chaque projet
 * - On ajoute tout dans .gallery
 */
-function renderGallery(list = works) {
-const gallery = document.querySelector(".gallery");
-console.log("gallery =", gallery);
-if (!gallery) return;
-gallery.innerHTML = "";
-list.forEach((work) => {
-const figure = document.createElement("figure");
-const img = document.createElement("img");
+function renderGallery(works) {
+    const gallery = document.querySelector(".gallery");
+    console.log("gallery =", gallery);
+    if (!gallery) return;
+    gallery.innerHTML = "";
+    works.forEach((work) => {
+        const figure = document.createElement("figure");
+        const img = document.createElement("img");
 img.src = work.imageUrl;
 img.alt = work.title;
 const figcaption = document.createElement("figcaption");
@@ -46,6 +76,7 @@ gallery.appendChild(figure);
 */
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    setupEditMode();
     await fetchWorks();        // récupère works + affiche la galerie
     await fetchCategories();   // récupère categories + crée les boutons
   } catch (err) {
