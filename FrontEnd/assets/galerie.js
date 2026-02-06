@@ -149,3 +149,75 @@ const allButtons = document.querySelectorAll(".filter-btn");
 allButtons.forEach((b) => b.classList.remove("active"));
 activeBtn.classList.add("active");
 }
+
+// --- MODALE ---
+function openModal() {
+  const overlay = document.querySelector(".modal-overlay");
+  if (!overlay) return;
+
+  overlay.style.display = "flex";
+  renderModalGallery(); // on remplit
+}
+
+function closeModal() {
+  const overlay = document.querySelector(".modal-overlay");
+  if (!overlay) return;
+
+  overlay.style.display = "none";
+}
+
+async function renderModalGallery() {
+  const modalGallery = document.querySelector(".modal-gallery");
+  if (!modalGallery) return;
+
+  modalGallery.innerHTML = "<p>Chargement...</p>";
+
+  const response = await fetch(`${API_BASE}/works`);
+  const worksForModal = await response.json();
+
+  modalGallery.innerHTML = "";
+
+  worksForModal.forEach((work) => {
+    const item = document.createElement("div");
+    item.classList.add("modal-item");
+
+    const img = document.createElement("img");
+    img.src = work.imageUrl;
+    img.alt = work.title;
+
+    item.appendChild(img);
+    modalGallery.appendChild(item);
+  });
+}
+
+// --- EVENTS ---
+document.addEventListener("DOMContentLoaded", () => {
+  const editBtn = document.querySelector(".edit-btn");
+  const overlay = document.querySelector(".modal-overlay");
+  const closeBtn = document.querySelector(".modal-close");
+
+  console.log("editBtn =", editBtn);
+  console.log("overlay =", overlay);
+  console.log("closeBtn =", closeBtn);
+
+  if (editBtn) {
+    editBtn.addEventListener("click", openModal);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeModal);
+  }
+
+  // clic sur le fond gris = ferme
+  if (overlay) {
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeModal();
+    });
+  }
+
+  // ESC = ferme
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+});
+

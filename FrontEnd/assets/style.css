@@ -205,3 +205,34 @@ cursor:pointer;
 background:#1D6154;
 color:white;
 }
+
+
+.modal-overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal{
+  background:#fff;
+  width:min(600px,90vw);
+  border-radius:12px;
+  padding:24px;
+  position:relative;
+}
+.modal-close{
+  position:absolute; top:10px; right:14px;
+  border:none; background:transparent;
+  font-size:28px; cursor:pointer;
+}
+.modal-gallery{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+.modal-item{ position:relative; }
+.modal-item img{ width:100%; display:block; }
+
