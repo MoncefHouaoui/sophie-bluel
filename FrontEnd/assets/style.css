@@ -236,3 +236,20 @@ color:white;
 .modal-item{ position:relative; }
 .modal-item img{ width:100%; display:block; }
 
+.modal-trash{
+  position:absolute;
+  top:6px;
+  right:6px;
+  border:none;
+  background:#000;
+  color:#fff;
+  width:26px;
+  height:26px;
+  border-radius:6px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+}
+

@@ -185,10 +185,52 @@ async function renderModalGallery() {
     img.src = work.imageUrl;
     img.alt = work.title;
 
+    const trash = document.createElement("button");
+    trash.classList.add("modal-trash");
+    trash.type = "button";
+    trash.textContent = "🗑";
+    trash.dataset.id = work.id;
+
+    trash.addEventListener("click", async () => {
+      await deleteWork(work.id);
+    });
+
     item.appendChild(img);
+    item.appendChild(trash);
     modalGallery.appendChild(item);
   });
 }
+
+async function deleteWork(id) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Tu dois être connecté pour supprimer.");
+    return;
+  }
+
+  const response = await fetch(`${API_BASE}/works/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    console.error("Suppression impossible :", response.status);
+    alert("Erreur : suppression impossible (token ou API).");
+    return;
+  }
+
+  // 1) Rafraîchir la modale
+  await renderModalGallery();
+
+  // 2) Rafraîchir la galerie principale (recharge works)
+  // si tu as déjà une fonction fetchWorks() qui remplit la galerie, utilise-la :
+  if (typeof fetchWorks === "function") {
+    await fetchWorks();
+  }
+}
+
 
 // --- EVENTS ---
 document.addEventListener("DOMContentLoaded", () => {
