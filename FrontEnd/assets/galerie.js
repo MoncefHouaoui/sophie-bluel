@@ -1,22 +1,18 @@
-console.log("✅ script.js est bien chargé");
+console.log("✅ galerie.js chargé");
 
-// 1) Adresse de base de l’API (ton back-end)
 const API_BASE = "http://localhost:5678/api";
-// 2) Variable qui stocke les projets récupérés
-let works = [];
-/**
-* 3) Appeler l’API pour récupérer les projets
-* - Requête GET sur /works
-* - Transformation en JSON
-* - Stockage dans works
-* - Affichage avec renderGallery()
-*/
 
+let works = [];
+let categories = [];
+
+/* =========================
+   1) MODE ÉDITION
+========================= */
 function setupEditMode() {
   const token = localStorage.getItem("token");
   if (!token) return;
 
-  // 1) login -> logout
+  // login -> logout
   const loginLink = document.querySelector('nav a[href="login.html"]');
   if (loginLink) {
     loginLink.textContent = "logout";
@@ -27,157 +23,120 @@ function setupEditMode() {
     });
   }
 
-  // 2) Cacher les filtres en mode édition (souvent demandé)
   const filters = document.querySelector(".filters");
   if (filters) filters.style.display = "none";
 
-  // 3) Afficher un bandeau si tu l’as dans le HTML
   const editBanner = document.querySelector(".edit-banner");
   if (editBanner) editBanner.style.display = "flex";
 
-  // 4) Afficher le bouton modifier si tu l’as dans le HTML
   const editBtn = document.querySelector(".edit-btn");
   if (editBtn) editBtn.style.display = "inline-flex";
-} 
+}
 
+/* =========================
+   2) WORKS + GALLERIE
+========================= */
 async function fetchWorks() {
-    const response = await fetch(`${API_BASE}/works`);
-    if (!response.ok) {
-        throw new Error("Impossible de récupérer les projets (works).");
-    }
-    works = await response.json();
-    renderGallery(works);
+  const response = await fetch(`${API_BASE}/works`);
+  if (!response.ok) throw new Error("Impossible de récupérer les projets.");
+  works = await response.json();
+  renderGallery(works);
 }
-/**
-* 4) Afficher les projets dans la page
-* - On vide la galerie
-* - On crée figure > img + figcaption pour chaque projet
-* - On ajoute tout dans .gallery
-*/
-function renderGallery(works) {
-    const gallery = document.querySelector(".gallery");
-    console.log("gallery =", gallery);
-    if (!gallery) return;
-    gallery.innerHTML = "";
-    works.forEach((work) => {
-        const figure = document.createElement("figure");
-        const img = document.createElement("img");
-img.src = work.imageUrl;
-img.alt = work.title;
-const figcaption = document.createElement("figcaption");
-figcaption.textContent = work.title;
-figure.appendChild(img);
-figure.appendChild(figcaption);
-gallery.appendChild(figure);
-});
-}
-/**
-* 5) Lancer automatiquement au chargement de la page
-*/
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    setupEditMode();
-    await fetchWorks();        // récupère works + affiche la galerie
-    await fetchCategories();   // récupère categories + crée les boutons
-  } catch (err) {
-    console.error(err);
-  }
-});
 
-// 6) Variable qui stocke les catégories récupérées
-let categories = [];
-/**
-* Récupérer les catégories depuis l’API
-* - GET /categories
-* - Stockage dans categories
-* - Création des boutons
-*/
+function renderGallery(list) {
+  const gallery = document.querySelector(".gallery");
+  if (!gallery) return;
+
+  gallery.innerHTML = "";
+  list.forEach((work) => {
+    const figure = document.createElement("figure");
+
+    const img = document.createElement("img");
+    img.src = work.imageUrl;
+    img.alt = work.title;
+
+    const figcaption = document.createElement("figcaption");
+    figcaption.textContent = work.title;
+
+    figure.appendChild(img);
+    figure.appendChild(figcaption);
+    gallery.appendChild(figure);
+  });
+}
+
+/* =========================
+   3) CATEGORIES + FILTRES
+========================= */
 async function fetchCategories() {
-console.log("✅ fetchCategories() appelé");
-const response = await fetch(`${API_BASE}/categories`);
-if (!response.ok) {
-throw new Error("Impossible de récupérer les catégories.");
-}
-categories = await response.json();
-console.log("categories =", categories);
-createFilterButtons();
-}
-console.log("✅ createFilterButtons() appelé");
-const filtersContainer = document.querySelector(".filters");
-console.log("filtersContainer =", filtersContainer);
-/**
-* Créer les boutons de filtre dans la div .filters
-* - Un bouton "Tous" (affiche tout)
-* - Un bouton par catégorie (affiche uniquement cette catégorie)
-*/
-function createFilterButtons() {
-const filtersContainer = document.querySelector(".filters");
-if (!filtersContainer) return;
-// On vide au cas où (si on réappelle la fonction)
-filtersContainer.innerHTML = "";
-// 1) Bouton "Tous"
-const allBtn = document.createElement("button");
-allBtn.textContent = "Tous";
-allBtn.classList.add("filter-btn", "active"); // actif par défaut
-allBtn.addEventListener("click", () => {
-setActiveFilterButton(allBtn);
-renderGallery(works); // on affiche tous les projets
-});
-filtersContainer.appendChild(allBtn);
-// 2) Boutons des catégories
-categories.forEach((cat) => {
-const btn = document.createElement("button");
-btn.textContent = cat.name;
-btn.classList.add("filter-btn");
-btn.addEventListener("click", () => {
-setActiveFilterButton(btn);
-// On filtre les projets selon la categoryId
-const filteredWorks = works.filter((work) => work.categoryId === cat.id);
-// On réaffiche uniquement ceux-là
-renderGallery(filteredWorks);
-});
-filtersContainer.appendChild(btn);
-});
-}
-/**
-* Mettre à jour le bouton actif (visuel)
-* - enlève la classe active de tous les boutons
-* - ajoute active au bouton cliqué
-*/
-function setActiveFilterButton(activeBtn) {
-const allButtons = document.querySelectorAll(".filter-btn");
-allButtons.forEach((b) => b.classList.remove("active"));
-activeBtn.classList.add("active");
+  const response = await fetch(`${API_BASE}/categories`);
+  if (!response.ok) throw new Error("Impossible de récupérer les catégories.");
+  categories = await response.json();
+  createFilterButtons();
 }
 
-// --- MODALE ---
+function createFilterButtons() {
+  const filtersContainer = document.querySelector(".filters");
+  if (!filtersContainer) return;
+
+  filtersContainer.innerHTML = "";
+
+  const allBtn = document.createElement("button");
+  allBtn.textContent = "Tous";
+  allBtn.classList.add("filter-btn", "active");
+  allBtn.addEventListener("click", () => {
+    setActiveFilterButton(allBtn);
+    renderGallery(works);
+  });
+  filtersContainer.appendChild(allBtn);
+
+  categories.forEach((cat) => {
+    const btn = document.createElement("button");
+    btn.textContent = cat.name;
+    btn.classList.add("filter-btn");
+    btn.addEventListener("click", () => {
+      setActiveFilterButton(btn);
+      const filtered = works.filter((w) => w.categoryId === cat.id);
+      renderGallery(filtered);
+    });
+    filtersContainer.appendChild(btn);
+  });
+}
+
+function setActiveFilterButton(activeBtn) {
+  document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+  activeBtn.classList.add("active");
+}
+
+/* =========================
+   4) MODALE (OUVRIR/FERMER)
+========================= */
 function openModal() {
   const overlay = document.querySelector(".modal-overlay");
   if (!overlay) return;
 
   overlay.style.display = "flex";
-  renderModalGallery(); // on remplit
+
+  renderModalGallery();
+  fillCategorySelect();
+  bindAddWorkForm(); // ✅ on branche le submit ici (au bon moment)
 }
 
 function closeModal() {
   const overlay = document.querySelector(".modal-overlay");
   if (!overlay) return;
-
   overlay.style.display = "none";
 }
 
+/* =========================
+   5) MODALE - GALLERIE
+========================= */
 async function renderModalGallery() {
   const modalGallery = document.querySelector(".modal-gallery");
   if (!modalGallery) return;
 
-  modalGallery.innerHTML = "<p>Chargement...</p>";
-
-  const response = await fetch(`${API_BASE}/works`);
-  const worksForModal = await response.json();
-
   modalGallery.innerHTML = "";
 
-  worksForModal.forEach((work) => {
+  works.forEach((work) => {
     const item = document.createElement("div");
     item.classList.add("modal-item");
 
@@ -189,7 +148,6 @@ async function renderModalGallery() {
     trash.classList.add("modal-trash");
     trash.type = "button";
     trash.textContent = "🗑";
-    trash.dataset.id = work.id;
 
     trash.addEventListener("click", async () => {
       await deleteWork(work.id);
@@ -202,7 +160,7 @@ async function renderModalGallery() {
 }
 
 async function deleteWork(id) {
-    if (!confirm("Tu es sûr de vouloir supprimer ce projet ?")) return;
+  if (!confirm("Tu es sûr de vouloir supprimer ce projet ?")) return;
 
   const token = localStorage.getItem("token");
   if (!token) {
@@ -212,124 +170,120 @@ async function deleteWork(id) {
 
   const response = await fetch(`${API_BASE}/works/${id}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) {
-    console.error("Suppression impossible :", response.status);
-    alert("Erreur : suppression impossible (token ou API).");
+    alert("Suppression impossible.");
     return;
   }
 
-  // 1) Rafraîchir la modale
+  // refresh data + UI
+  await fetchWorks();
   await renderModalGallery();
-
-  // 2) Rafraîchir la galerie principale (recharge works)
-  // si tu as déjà une fonction fetchWorks() qui remplit la galerie, utilise-la :
-  if (typeof fetchWorks === "function") {
-    await fetchWorks();
-  }
 }
 
-
-// --- EVENTS ---
-document.addEventListener("DOMContentLoaded", () => {
-  const editBtn = document.querySelector(".edit-btn");
-  const overlay = document.querySelector(".modal-overlay");
-  const closeBtn = document.querySelector(".modal-close");
-
-  console.log("editBtn =", editBtn);
-  console.log("overlay =", overlay);
-  console.log("closeBtn =", closeBtn);
-
-  if (editBtn) {
-    editBtn.addEventListener("click", openModal);
-  }
-
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeModal);
-  }
-
-  // clic sur le fond gris = ferme
-  if (overlay) {
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeModal();
-    });
-  }
-
-  // ESC = ferme
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
-  });
-});
-
-async function loadCategories() {
+/* =========================
+   6) AJOUT - CATEGORIES SELECT
+========================= */
+function fillCategorySelect() {
   const select = document.querySelector("#category");
-  console.log("select #category =", select);
-
   if (!select) return;
 
-  console.log("📡 appel API categories...");
-  const res = await fetch(`${API_BASE}/categories`);
-  console.log("status categories =", res.status);
-
-  const categories = await res.json();
-  console.log("categories =", categories);
-
   select.innerHTML = "";
-
   categories.forEach((cat) => {
     const option = document.createElement("option");
     option.value = cat.id;
     option.textContent = cat.name;
     select.appendChild(option);
   });
-
-  console.log("✅ options ajoutées =", select.options.length);
 }
 
-// test direct au chargement (pour vérifier)
-document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-});
+/* =========================
+   7) AJOUT - SUBMIT FORM
+========================= */
+function bindAddWorkForm() {
+  const form = document.querySelector("#add-work-form");
+  if (!form) return;
 
+  // évite de rebrancher à chaque ouverture
+  if (form.dataset.bound === "1") return;
+  form.dataset.bound = "1";
 
-const form = document.querySelector(".add-work-form");
+  form.addEventListener("submit", handleAddWorkSubmit);
+}
 
-if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+async function handleAddWorkSubmit(e) {
+  e.preventDefault();
 
-    const image = document.querySelector("#image").files[0];
-    const title = document.querySelector("#title").value;
-    const category = document.querySelector("#category").value;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Tu dois être connecté.");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("image", image);
-    formData.append("title", title);
-    formData.append("category", category);
+  const form = e.target;
+  const imageFile = form.querySelector("#image").files[0];
+  const title = form.querySelector("#title").value.trim();
+  const category = form.querySelector("#category").value;
 
-    const token = localStorage.getItem("token");
+  if (!imageFile || !title || !category) {
+    alert("Merci de remplir tous les champs.");
+    return;
+  }
 
-    const response = await fetch(`${API_BASE}/works`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  formData.append("title", title);
+  formData.append("category", Number(category));
 
-    if (!response.ok) {
-      alert("Erreur lors de l’ajout");
-      return;
+  const response = await fetch(`${API_BASE}/works`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  console.log("POST /works status =", response.status);
+
+  if (!response.ok) {
+    console.log("Erreur serveur =", await response.text());
+    alert("Ajout échoué.");
+    return;
+  }
+
+  // ✅ refresh data + UI
+  await fetchWorks();         // recharge works depuis l'API (source de vérité)
+  await renderModalGallery(); // met à jour la modale
+  form.reset();
+  closeModal();
+}
+
+/* =========================
+   8) EVENTS INIT
+========================= */
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    setupEditMode();
+    await fetchCategories();
+    await fetchWorks();
+
+    const editBtn = document.querySelector(".edit-btn");
+    const overlay = document.querySelector(".modal-overlay");
+    const closeBtn = document.querySelector(".modal-close");
+
+    if (editBtn) editBtn.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+
+    if (overlay) {
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeModal();
+      });
     }
 
-    // mise à jour UI
-    await renderModalGallery();
-    if (typeof fetchWorks === "function") await fetchWorks();
-
-    form.reset();
-  });
-}
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
