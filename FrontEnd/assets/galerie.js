@@ -202,6 +202,8 @@ async function renderModalGallery() {
 }
 
 async function deleteWork(id) {
+    if (!confirm("Tu es sûr de vouloir supprimer ce projet ?")) return;
+
   const token = localStorage.getItem("token");
   if (!token) {
     alert("Tu dois être connecté pour supprimer.");
@@ -263,3 +265,57 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+async function loadCategoriesInSelect() {
+  const select = document.querySelector("#category");
+  if (!select) return;
+
+  const response = await fetch(`${API_BASE}/categories`);
+  const categories = await response.json();
+
+  select.innerHTML = "";
+
+  categories.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat.id;
+    option.textContent = cat.name;
+    select.appendChild(option);
+  });
+}
+
+const form = document.querySelector(".add-work-form");
+
+if (form) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const image = document.querySelector("#image").files[0];
+    const title = document.querySelector("#title").value;
+    const category = document.querySelector("#category").value;
+
+    const formData = new FormData();
+    formData.append("image", image);
+    formData.append("title", title);
+    formData.append("category", category);
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_BASE}/works`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      alert("Erreur lors de l’ajout");
+      return;
+    }
+
+    // mise à jour UI
+    await renderModalGallery();
+    if (typeof fetchWorks === "function") await fetchWorks();
+
+    form.reset();
+  });
+}

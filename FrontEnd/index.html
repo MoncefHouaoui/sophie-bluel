@@ -77,9 +77,17 @@
     <button class="modal-close" type="button">×</button>
     <h3>Galerie photo</h3>
     <div class="modal-gallery"></div>
-  </div>
-</div>
+	<button id="add-photo-btn">Ajouter une photo</button>
 
+	<form id="add-work-form">
+  <input type="file" id="image" accept="image/*" required />
+
+  <input type="text" id="title" placeholder="Titre du projet" required />
+
+  <select id="category" required></select>
+
+  <button type="submit">Valider</button>
+</form>
   </div>
 </div>
 
