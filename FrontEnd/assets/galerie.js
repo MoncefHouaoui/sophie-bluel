@@ -265,12 +265,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function loadCategoriesInSelect() {
+async function loadCategories() {
   const select = document.querySelector("#category");
+  console.log("select #category =", select);
+
   if (!select) return;
 
-  const response = await fetch(`${API_BASE}/categories`);
-  const categories = await response.json();
+  console.log("📡 appel API categories...");
+  const res = await fetch(`${API_BASE}/categories`);
+  console.log("status categories =", res.status);
+
+  const categories = await res.json();
+  console.log("categories =", categories);
 
   select.innerHTML = "";
 
@@ -280,7 +286,15 @@ async function loadCategoriesInSelect() {
     option.textContent = cat.name;
     select.appendChild(option);
   });
+
+  console.log("✅ options ajoutées =", select.options.length);
 }
+
+// test direct au chargement (pour vérifier)
+document.addEventListener("DOMContentLoaded", () => {
+  loadCategories();
+});
+
 
 const form = document.querySelector(".add-work-form");
 
